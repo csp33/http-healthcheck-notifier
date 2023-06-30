@@ -16,3 +16,5 @@ Script to run HTTP healthchecks and send a notification if they fail
     docker compose build
     docker compose up -d
     ```
+
+Image is available at https://hub.docker.com/r/csp33/http-healthcheck-notifier
