@@ -1,9 +1,9 @@
 import asyncio
 import logging
 import os
-
 import requests
 import telegram
+from retrying import retry
 
 telegram_token = os.environ["TELEGRAM_TOKEN"]
 telegram_chat_id = os.environ["TELEGRAM_DESTINATION_CHAT_ID"]
@@ -32,10 +32,15 @@ async def send_telegram_message(message):
     await bot.send_message(chat_id=telegram_chat_id, text=message)
 
 
+@retry(stop_max_attempt_number=4, wait_fixed=5 * 1000)
+def connect():
+    response = requests.get(endpoint_url, timeout=30)
+    response.raise_for_status()
+
+
 async def check_remote_server():
     try:
-        response = requests.get(endpoint_url, timeout=30)
-        response.raise_for_status()
+        connect()
         logger.info(f"Connection with {endpoint_url} successfully established")
     except requests.exceptions.RequestException:
         await send_telegram_message(f"Unable to connect to {endpoint_url}")
